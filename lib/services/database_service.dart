@@ -49,6 +49,21 @@ class DatabaseService {
         .toList();
   }
 
+  /// Creates a new workout under `/workouts` and returns it with its id.
+  Future<Workout> createWorkout(Workout workout) async {
+    final ref = _workoutsRef.push();
+    await ref.set(workout.toJson());
+    return Workout(
+      id: ref.key!,
+      title: workout.title,
+      difficulty: workout.difficulty,
+      equipment: workout.equipment,
+      exercises: workout.exercises,
+      focus: workout.focus,
+      isFeatured: workout.isFeatured,
+    );
+  }
+
   Future<List<IntramuralEvent>> fetchEvents() async {
     final snap = await _eventsRef.get();
     if (!snap.exists) return [];

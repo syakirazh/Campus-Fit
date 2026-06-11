@@ -5,6 +5,7 @@ import '../../models/workout.dart';
 import '../../state/content_state.dart';
 import '../../widgets/section_header.dart';
 import '../../widgets/workout_card.dart';
+import 'create_workout_screen.dart';
 import 'workout_detail_screen.dart';
 
 /// Screen 12 — workouts list with a featured "today's pick" and a list of
@@ -21,6 +22,16 @@ class WorkoutsListScreen extends StatelessWidget {
       body: SafeArea(
         child: _body(context, content),
       ),
+      // Signed-in students can build and publish their own routines.
+      floatingActionButton: content.canCreateWorkouts
+          ? FloatingActionButton.extended(
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const CreateWorkoutScreen()),
+              ),
+              icon: const Icon(Icons.add),
+              label: const Text('New workout'),
+            )
+          : null,
     );
   }
 

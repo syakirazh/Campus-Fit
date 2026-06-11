@@ -82,8 +82,35 @@ class ContentState extends ChangeNotifier {
     }
   }
 
-  /// Whether the current user may create events (signed-in students only).
+  /// Whether the current user may create content (signed-in students only).
   bool get canCreateEvents => _uid != null;
+  bool get canCreateWorkouts => _uid != null;
+
+  /// Creates a new workout routine and inserts it into the local list. Only
+  /// available to signed-in students.
+  Future<Workout> createWorkout({
+    required String title,
+    required WorkoutDifficulty difficulty,
+    required String equipment,
+    required List<Exercise> exercises,
+    String focus = '',
+  }) async {
+    if (_uid == null) {
+      throw StateError('Only signed-in students can create workouts.');
+    }
+    final draft = Workout(
+      id: '',
+      title: title.trim(),
+      difficulty: difficulty,
+      equipment: equipment.trim(),
+      focus: focus.trim(),
+      exercises: exercises,
+    );
+    final created = await _database.createWorkout(draft);
+    _workouts = [..._workouts, created];
+    notifyListeners();
+    return created;
+  }
 
   /// Creates a new intramural event organised by the current user and inserts
   /// it into the local list (sorted by start time). Only available to

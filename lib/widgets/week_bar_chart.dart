@@ -57,12 +57,22 @@ class StepsBarChart extends StatelessWidget {
             bottomTitles: AxisTitles(
               sideTitles: SideTitles(
                 showTitles: true,
+                reservedSize: 22,
                 getTitlesWidget: (value, _) {
                   final i = value.toInt();
                   if (i < 0 || i >= data.length) return const SizedBox();
+                  // Month view counts the bars 1..30 (position, not calendar
+                  // date). Labelling all 30 overlaps, so only mark the 1st,
+                  // every 5th, and the last bar for a clean axis.
+                  final pos = i + 1;
+                  final isLast = i == data.length - 1;
+                  if (!showWeekdayLabels &&
+                      !(pos == 1 || pos % 5 == 0 || isLast)) {
+                    return const SizedBox();
+                  }
                   final label = showWeekdayLabels
                       ? _weekdays[data[i].date.weekday - 1]
-                      : '${data[i].date.day}';
+                      : '$pos';
                   return Padding(
                     padding: const EdgeInsets.only(top: 6),
                     child: Text(label, style: theme.textTheme.bodySmall),

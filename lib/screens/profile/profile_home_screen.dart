@@ -120,12 +120,11 @@ class ProfileHomeScreen extends StatelessWidget {
               title: 'About Campus Fit',
               onTap: () => _open(context, const AboutScreen()),
             ),
-            if (user.isSignedIn)
-              _MenuTile(
-                icon: Icons.logout,
-                title: 'Sign out',
-                onTap: () => _signOut(context),
-              ),
+            _MenuTile(
+              icon: Icons.logout,
+              title: user.isSignedIn ? 'Sign out' : 'Log out',
+              onTap: () => _logOut(context),
+            ),
           ],
         ),
       ),
@@ -136,8 +135,30 @@ class ProfileHomeScreen extends StatelessWidget {
     Navigator.of(context).push(MaterialPageRoute(builder: (_) => screen));
   }
 
-  Future<void> _signOut(BuildContext context) async {
-    await context.read<SessionState>().signOut();
+  Future<void> _logOut(BuildContext context) async {
+    final signedIn = context.read<SessionState>().session.isSignedIn;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(signedIn ? 'Sign out?' : 'Log out?'),
+        content: Text(signedIn
+            ? 'You can sign back in anytime to sync your progress.'
+            : 'You can continue as a guest or sign in again from the welcome '
+                'screen.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(signedIn ? 'Sign out' : 'Log out'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !context.mounted) return;
+    await context.read<SessionState>().logOut();
     if (!context.mounted) return;
     Navigator.of(context).pushAndRemoveUntil(
       MaterialPageRoute(builder: (_) => const WelcomeScreen()),

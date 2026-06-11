@@ -3,7 +3,9 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 
 import '../../state/activity_state.dart';
+import '../../state/session_state.dart';
 import '../../state/settings_state.dart';
+import '../onboarding/welcome_screen.dart';
 import 'about_screen.dart';
 
 /// Screen 23 — settings: notifications toggle, daily step goal, units, theme,
@@ -16,6 +18,7 @@ class SettingsScreen extends StatelessWidget {
     final theme = Theme.of(context);
     final settings = context.watch<SettingsState>();
     final activity = context.watch<ActivityState>();
+    final session = context.watch<SessionState>();
 
     return Scaffold(
       appBar: AppBar(title: const Text('Settings')),
@@ -122,9 +125,52 @@ class SettingsScreen extends StatelessWidget {
                 ],
               ),
             ),
+            const SizedBox(height: 20),
+            _SectionLabel('Account'),
+            Card(
+              child: ListTile(
+                leading: Icon(Icons.logout, color: theme.colorScheme.error),
+                title: Text(
+                  session.session.isSignedIn ? 'Sign out' : 'Log out',
+                  style: TextStyle(color: theme.colorScheme.error),
+                ),
+                onTap: () => _logOut(context),
+              ),
+            ),
           ],
         ),
       ),
+    );
+  }
+
+  Future<void> _logOut(BuildContext context) async {
+    final signedIn = context.read<SessionState>().session.isSignedIn;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(signedIn ? 'Sign out?' : 'Log out?'),
+        content: Text(signedIn
+            ? 'You can sign back in anytime to sync your progress.'
+            : 'You can continue as a guest or sign in again from the welcome '
+                'screen.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(signedIn ? 'Sign out' : 'Log out'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !context.mounted) return;
+    await context.read<SessionState>().logOut();
+    if (!context.mounted) return;
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (_) => const WelcomeScreen()),
+      (route) => false,
     );
   }
 

@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../../state/content_state.dart';
 import '../../widgets/event_card.dart';
+import 'create_event_screen.dart';
 import 'event_detail_screen.dart';
 import 'my_events_screen.dart';
 
@@ -31,6 +32,16 @@ class EventsListScreen extends StatelessWidget {
       body: SafeArea(
         child: _body(context, content, events),
       ),
+      // Signed-in students can organise their own intramural events.
+      floatingActionButton: content.canCreateEvents
+          ? FloatingActionButton.extended(
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const CreateEventScreen()),
+              ),
+              icon: const Icon(Icons.add),
+              label: const Text('Add event'),
+            )
+          : null,
     );
   }
 

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import '../../state/activity_state.dart';
@@ -26,6 +27,7 @@ class _StepHistoryScreenState extends State<StepHistoryScreen> {
     final totalSteps = data.fold<int>(0, (s, d) => s + d.steps);
     final totalDistanceKm = totalSteps * 0.762 / 1000;
     final avg = activity.averageSteps(days: days);
+    final numberFmt = NumberFormat.decimalPattern();
 
     return Scaffold(
       appBar: AppBar(title: const Text('Step history')),
@@ -59,7 +61,7 @@ class _StepHistoryScreenState extends State<StepHistoryScreen> {
                 Expanded(
                   child: StatTile(
                     icon: Icons.directions_walk,
-                    value: '${avg.round()}',
+                    value: numberFmt.format(avg.round()),
                     label: 'Daily average',
                   ),
                 ),
@@ -76,7 +78,7 @@ class _StepHistoryScreenState extends State<StepHistoryScreen> {
                 Expanded(
                   child: StatTile(
                     icon: Icons.functions,
-                    value: '$totalSteps',
+                    value: numberFmt.format(totalSteps),
                     label: 'Total steps',
                     color: AppColors.accentCoral,
                   ),

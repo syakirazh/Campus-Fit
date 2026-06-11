@@ -159,8 +159,28 @@ class SessionState extends ChangeNotifier {
 
   Future<void> sendPasswordReset(String email) => _auth.sendPasswordReset(email);
 
+  /// Changes the signed-in user's account password.
+  Future<void> changePassword(String newPassword) =>
+      _auth.updatePassword(newPassword);
+
   Future<void> signOut() async {
     await _auth.signOut();
+    _session = UserSession(
+      mode: AuthMode.guest,
+      displayName: _store.guestName,
+      dailyStepGoal: _store.stepGoal,
+    );
+    notifyListeners();
+  }
+
+  /// Logs out of the current session — signed-in *or* guest — and clears the
+  /// "entered" flag so the splash routes back to the Welcome screen on the next
+  /// launch instead of dropping straight into the home shell.
+  Future<void> logOut() async {
+    if (_session.isSignedIn) {
+      await _auth.signOut();
+    }
+    await _store.setAppEntered(false);
     _session = UserSession(
       mode: AuthMode.guest,
       displayName: _store.guestName,

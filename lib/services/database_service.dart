@@ -61,6 +61,23 @@ class DatabaseService {
     return events;
   }
 
+  /// Creates a new event under `/events` and returns its generated id.
+  Future<IntramuralEvent> createEvent(IntramuralEvent event) async {
+    final ref = _eventsRef.push();
+    await ref.set(event.toJson());
+    return IntramuralEvent(
+      id: ref.key!,
+      title: event.title,
+      sport: event.sport,
+      startTime: event.startTime,
+      venue: event.venue,
+      organizer: event.organizer,
+      capacity: event.capacity,
+      participantNames: event.participantNames,
+      description: event.description,
+    );
+  }
+
   /// Adds a participant to an event using a transaction so the join count is
   /// consistent across users.
   Future<void> joinEvent(String eventId, String participantName) async {

@@ -68,6 +68,24 @@ dev_dependencies:
   # rules and activating additional ones.
   flutter_lints: ^6.0.0
 
+  # Generates crisp adaptive launcher icons from the CampusFit mark.
+  flutter_launcher_icons: ^0.14.1
+
+# Adaptive launcher icon: the green graduation-cap mark sits on a clean cream
+# circle (foreground transparent PNG + flat cream background), so there is no
+# nested double-background. The same foreground/background drive the Android 12+
+# splash icon.
+flutter_launcher_icons:
+  android: true
+  ios: false
+  image_path: "assets/icon/ic_legacy.png"
+  adaptive_icon_background: "#F4F1E8"
+  adaptive_icon_foreground: "assets/icon/ic_fg.png"
+  # Android 12+ system splash: green mark on a cream circle.
+  android_12:
+    image: "assets/icon/ic_fg.png"
+    icon_background_color: "#F4F1E8"
+
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
 

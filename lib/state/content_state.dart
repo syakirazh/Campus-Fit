@@ -82,6 +82,40 @@ class ContentState extends ChangeNotifier {
     }
   }
 
+  /// Whether the current user may create events (signed-in students only).
+  bool get canCreateEvents => _uid != null;
+
+  /// Creates a new intramural event organised by the current user and inserts
+  /// it into the local list (sorted by start time). Only available to
+  /// signed-in students.
+  Future<IntramuralEvent> createEvent({
+    required String title,
+    required String sport,
+    required DateTime startTime,
+    required String venue,
+    required int capacity,
+    String description = '',
+  }) async {
+    if (_uid == null) {
+      throw StateError('Only signed-in students can create events.');
+    }
+    final draft = IntramuralEvent(
+      id: '',
+      title: title.trim(),
+      sport: sport.trim(),
+      startTime: startTime,
+      venue: venue.trim(),
+      organizer: _displayName,
+      capacity: capacity,
+      description: description.trim(),
+    );
+    final created = await _database.createEvent(draft);
+    _events = [..._events, created]
+      ..sort((a, b) => a.startTime.compareTo(b.startTime));
+    notifyListeners();
+    return created;
+  }
+
   Future<void> toggleRsvp(IntramuralEvent event) async {
     final joining = !_rsvps.contains(event.id);
     if (joining) {

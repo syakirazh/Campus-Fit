@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -45,6 +46,22 @@ Future<void> main() async {
     databaseService: databaseService,
     stepService: stepService,
   ));
+}
+
+/// Allows scrolling with a mouse wheel and click-drag (and trackpad/stylus),
+/// not just touch — so every list scrolls when driving the app with a mouse
+/// (emulator, desktop, or a connected pointer) instead of a finger.
+class AppScrollBehavior extends MaterialScrollBehavior {
+  const AppScrollBehavior();
+
+  @override
+  Set<PointerDeviceKind> get dragDevices => {
+        PointerDeviceKind.touch,
+        PointerDeviceKind.mouse,
+        PointerDeviceKind.trackpad,
+        PointerDeviceKind.stylus,
+        PointerDeviceKind.invertedStylus,
+      };
 }
 
 class CampusFitApp extends StatelessWidget {
@@ -110,6 +127,7 @@ class CampusFitApp extends StatelessWidget {
             theme: AppTheme.light(),
             darkTheme: AppTheme.dark(),
             themeMode: settings.themeMode,
+            scrollBehavior: const AppScrollBehavior(),
             home: const SplashScreen(),
           );
         },

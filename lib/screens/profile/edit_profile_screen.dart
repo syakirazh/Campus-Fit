@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../services/auth_service.dart';
 import '../../state/activity_state.dart';
 import '../../state/session_state.dart';
 
-/// Screen 21 — edit profile: display name, email, faculty, daily step goal,
+/// Screen 21 — edit profile: display name, email, password, daily step goal,
 /// and (placeholder) profile photo.
 class EditProfileScreen extends StatefulWidget {
   const EditProfileScreen({super.key});
@@ -17,7 +18,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   final _formKey = GlobalKey<FormState>();
   late final TextEditingController _name;
   late final TextEditingController _email;
-  late final TextEditingController _faculty;
+  late final TextEditingController _password;
   late int _stepGoal;
 
   @override
@@ -26,7 +27,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     final user = context.read<SessionState>().session;
     _name = TextEditingController(text: user.displayName ?? '');
     _email = TextEditingController(text: user.email ?? '');
-    _faculty = TextEditingController(text: user.faculty ?? '');
+    _password = TextEditingController();
     _stepGoal = user.dailyStepGoal;
   }
 
@@ -34,7 +35,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   void dispose() {
     _name.dispose();
     _email.dispose();
-    _faculty.dispose();
+    _password.dispose();
     super.dispose();
   }
 
@@ -44,14 +45,34 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     final activity = context.read<ActivityState>();
     final navigator = Navigator.of(context);
     final messenger = ScaffoldMessenger.of(context);
+    final newPassword = _password.text;
 
     await session.updateProfile(
       displayName: _name.text.trim(),
       email: _email.text.trim().isEmpty ? null : _email.text.trim(),
-      faculty: _faculty.text.trim().isEmpty ? null : _faculty.text.trim(),
       dailyStepGoal: _stepGoal,
     );
     await activity.setStepGoal(_stepGoal);
+
+    // Change the account password only if one was entered. Guests have no
+    // account, so nothing to update there.
+    if (newPassword.isNotEmpty) {
+      if (!session.session.isSignedIn) {
+        if (!mounted) return;
+        messenger.showSnackBar(const SnackBar(
+            content: Text('Sign in to an account to set a password.')));
+        return;
+      }
+      try {
+        await session.changePassword(newPassword);
+      } catch (e) {
+        if (!mounted) return;
+        messenger.showSnackBar(
+            SnackBar(content: Text(AuthService.messageFor(e))));
+        return;
+      }
+    }
+
     if (!mounted) return;
     messenger.showSnackBar(const SnackBar(content: Text('Profile updated.')));
     navigator.pop();
@@ -126,11 +147,17 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 ),
                 const SizedBox(height: 16),
                 TextFormField(
-                  controller: _faculty,
+                  controller: _password,
+                  obscureText: true,
                   decoration: const InputDecoration(
-                    labelText: 'Faculty',
-                    prefixIcon: Icon(Icons.school_outlined),
+                    labelText: 'New password',
+                    helperText: 'Leave blank to keep your current password',
+                    prefixIcon: Icon(Icons.lock_outline),
                   ),
+                  validator: (v) =>
+                      (v != null && v.isNotEmpty && v.length < 6)
+                          ? 'Password must be at least 6 characters'
+                          : null,
                 ),
                 const SizedBox(height: 24),
                 Text('Daily step goal: $_stepGoal',

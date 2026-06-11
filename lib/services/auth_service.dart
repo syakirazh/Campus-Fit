@@ -36,6 +36,19 @@ class AuthService {
   Future<void> sendPasswordReset(String email) =>
       _auth.sendPasswordResetEmail(email: email.trim());
 
+  /// Changes the signed-in user's password. May throw `requires-recent-login`
+  /// if the session is stale, in which case the user must sign in again.
+  Future<void> updatePassword(String newPassword) async {
+    final user = _auth.currentUser;
+    if (user == null) {
+      throw FirebaseAuthException(
+        code: 'no-current-user',
+        message: 'You must be signed in to change your password.',
+      );
+    }
+    await user.updatePassword(newPassword);
+  }
+
   Future<void> signOut() => _auth.signOut();
 
   /// Maps Firebase error codes to friendly, user-facing messages.
@@ -49,6 +62,8 @@ class AuthService {
           'Incorrect email or password.',
         'network-request-failed' => 'Network error — check your connection.',
         'too-many-requests' => 'Too many attempts. Try again later.',
+        'requires-recent-login' =>
+          'Please sign out and sign in again to change your password.',
         _ => error.message ?? 'Authentication failed. Please try again.',
       };
     }

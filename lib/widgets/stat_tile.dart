@@ -29,10 +29,17 @@ class StatTile extends StatelessWidget {
         children: [
           Icon(icon, color: tint, size: 24),
           const SizedBox(height: 8),
-          Text(
-            value,
-            style: theme.textTheme.titleMedium
-                ?.copyWith(fontWeight: FontWeight.w700),
+          // Keep large values (e.g. a month's total steps) on one line by
+          // scaling them down to fit the tile instead of overflowing.
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              value,
+              maxLines: 1,
+              softWrap: false,
+              style: theme.textTheme.titleMedium
+                  ?.copyWith(fontWeight: FontWeight.w700),
+            ),
           ),
           const SizedBox(height: 2),
           Text(
